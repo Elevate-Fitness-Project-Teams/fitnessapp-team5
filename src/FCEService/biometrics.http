@@ -1,0 +1,87 @@
+@baseUrl = http://localhost:5132
+
+### ✅ Test 1: Happy Path — Valid Request (Should return 200 OK)
+POST {{baseUrl}}/api/v1/fitness/weight-goal-activity
+Content-Type: application/json
+
+{
+  "userId": "3fa85f63-5717-4562-b3fc-2c963f66afa6",
+  "weight": 80.5,
+  "height": 175.0,
+  "birthDate": "1995-06-15T00:00:00Z",
+  "gender": 0,
+  "goal": 1,
+  "activityLevel": 2
+}
+
+###
+
+### ❌ Test 2: Validation Error — Empty UserId (Should return 400 Bad Request)
+POST {{baseUrl}}/api/v1/fitness/weight-goal-activity
+Content-Type: application/json
+
+{
+  "userId": "00000000-0000-0000-0000-000000000000",
+  "weight": 80.5,
+  "height": 175.0,
+  "birthDate": "1995-06-15T00:00:00Z",
+  "gender": 0,
+  "goal": 1,
+  "activityLevel": 2
+}
+
+###
+
+### ❌ Test 3: Validation Error — Weight out of range (Should return 400 Bad Request)
+POST {{baseUrl}}/api/v1/fitness/weight-goal-activity
+Content-Type: application/json
+
+{
+  "userId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "weight": 10,
+  "height": 175.0,
+  "birthDate": "1995-06-15T00:00:00Z",
+  "gender": 0,
+  "goal": 1,
+  "activityLevel": 2
+}
+
+###
+
+### ❌ Test 4: Validation Error — Age under 16 (Born in 2020) (Should return 400 Bad Request)
+POST {{baseUrl}}/api/v1/fitness/weight-goal-activity
+Content-Type: application/json
+
+{
+  "userId": "3fa85f64-5717-4562-b3fc-2c963f66afa7",
+  "weight": 50.0,
+  "height": 160.0,
+  "birthDate": "2020-01-01T00:00:00Z",
+  "gender": 1,
+  "goal": 2,
+  "activityLevel": 1
+}
+
+###
+
+### ❌ Test 5: Validation Error — Invalid Enum value (Should return 400 Bad Request)
+POST {{baseUrl}}/api/v1/fitness/weight-goal-activity
+Content-Type: application/json
+
+{
+  "userId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "weight": 80.5,
+  "height": 175.0,
+  "birthDate": "1995-06-15T00:00:00Z",
+  "gender": 99,
+  "goal": 1,
+  "activityLevel": 2
+}
+
+###
+# Enum Reference:
+# Gender:        Male=0, Female=1
+# Goal:          LoseWeight=1, GetFitter=2, GainWeight=3, GainMoreFlexible=4, LearnTheBasic=5
+# ActivityLevel: Rookie=1, Beginner=2, Intermediate=3, Advance=4, TrueBeast=5
+### ✅ Test GET Biometrics by UserId
+GET {{baseUrl}}/api/v1/fitness/stats/3fa85f64-5717-4562-b3fc-2c963f66afa6
