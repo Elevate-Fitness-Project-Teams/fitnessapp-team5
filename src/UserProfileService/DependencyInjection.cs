@@ -1,4 +1,5 @@
-﻿using Carter;
+﻿using Bulk.Shared.Settings;
+using Carter;
 using Mapster;
 using MapsterMapper;
 using MassTransit;
@@ -6,7 +7,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using UserProfileService.Features.UserProfiles.Messaging.Consumers;
 using UserProfileService.Implementation;
 using UserProfileService.Implementation.Services;
 using UserProfileService.Interfaces;
@@ -34,7 +34,7 @@ public static class DependencyInjection
 
         services.AddHttpContextAccessor();
         services.AddProblemDetails();
-        services.AddRabbitMqConfiguration();
+        services.AddRabbitMqConfiguration(configuration);
         services.AddAuthenticationConfig(configuration);
         services.AddCarter();
 
@@ -55,25 +55,23 @@ public static class DependencyInjection
         return services;
     }
 
-    private static IServiceCollection AddRabbitMqConfiguration(this IServiceCollection services)
+    private static IServiceCollection AddRabbitMqConfiguration(this IServiceCollection services, IConfiguration configuration)
     {
+        var rabbitMq = configuration.GetSection(RabbitMqOptions.SectionName).Get<RabbitMqOptions>();
+
         services.AddMassTransit(x =>
         {
-            x.AddConsumer<UserRegisteredConsumer>();
+            x.AddConsumers(typeof(DependencyInjection).Assembly);
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                cfg.Host("localhost", "/", h =>
+                cfg.Host(rabbitMq!.Host, "/", h =>
                 {
-                    h.Username("guest");
-                    h.Password("guest");
+                    h.Username(rabbitMq.UserName);
+                    h.Password(rabbitMq.Password);
                 });
 
-                cfg.ReceiveEndpoint("user-registered-queue", e =>
-                {
-                    e.Bind("user-registered-event");
-                    e.ConfigureConsumer<UserRegisteredConsumer>(context);
-                });
+                cfg.ConfigureEndpoints(context);
             });
         });
 

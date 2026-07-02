@@ -23,11 +23,10 @@ public sealed class UserProfile
         new()
         { UserId = userId, FirstName = firstName, LastName = lastName, Email = email, Phone = phone };
 
-    public void Update(string firstName, string lastName, string email, string phone)
+    public void Update(string firstName, string lastName, string phone)
     {
         FirstName = firstName;
         LastName = lastName;
-        Email = email;
         Phone = phone;
     }
 }
