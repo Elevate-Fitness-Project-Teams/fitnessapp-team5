@@ -9,6 +9,3 @@ public record CreateUserProfileCommand(
     string Email,
     string Phone
 ) : IRequest<bool>;
-
-#region Validation
-#endregion

@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/AuthenticationService/AuthenticationService.csproj" />
+    <Project Path="src/Bulk.Shared/Bulk.Shared.csproj" Id="4458c75f-64fd-42ff-b5e0-48e07e1f98e2" />
     <Project Path="src/FCEService/FCEService.csproj" Id="ad5da5e1-c4a3-4b99-a9df-9e2a5b33c812" />
     <Project Path="src/NutritionService/NutritionService.csproj" />
     <Project Path="src/UserProfileService/UserProfileService.csproj" Id="f72b74ee-16e4-48f9-86c3-881f35d38353" />

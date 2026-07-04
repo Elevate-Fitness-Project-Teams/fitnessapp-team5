@@ -1,12 +1,16 @@
-﻿using Carter;
+﻿using Bulk.Shared.Settings;
+using Carter;
+using FluentValidation;
 using Mapster;
 using MapsterMapper;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 using System.Text;
-using UserProfileService.Features.UserProfiles.Messaging.Consumers;
+using UserProfileService.Abstractions;
+using UserProfileService.Exceptions;
 using UserProfileService.Implementation;
 using UserProfileService.Implementation.Services;
 using UserProfileService.Interfaces;
@@ -26,15 +30,30 @@ public static class DependencyInjection
         var connectionString = configuration.GetConnectionString("DefaultConnection")
             ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-        services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
+        services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseSqlServer(connectionString)
+        .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
+
+        var allowedOrigins = configuration.GetSection("AllowedOrigins").Get<string[]>();
+
+        services.AddCors(options =>
+            options.AddDefaultPolicy(builder =>
+                builder
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .WithOrigins(allowedOrigins!)
+            )
+        );
+
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         services.AddScoped<ICurrentUser, CurrentUser>();
+        services.AddScoped<IFileService, FileService>();
 
         services.AddHttpContextAccessor();
         services.AddProblemDetails();
-        services.AddRabbitMqConfiguration();
+        services.AddRabbitMqConfiguration(configuration);
         services.AddAuthenticationConfig(configuration);
         services.AddCarter();
 
@@ -46,34 +65,39 @@ public static class DependencyInjection
 
         services.AddSingleton<IMapper>(new Mapper(mappingConfiguration));
 
+        services.AddExceptionHandler<ValidationExceptionHandler>();
+        services.AddExceptionHandler<GlobalExceptionHandler>();
+
+        services.AddFluentValidationAutoValidation()
+            .AddValidatorsFromAssembly(assembly);
+
         //Add MediatR
         services.AddMediatR(cfg =>
         {
             cfg.RegisterServicesFromAssembly(assembly);
+            cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
         });
 
         return services;
     }
 
-    private static IServiceCollection AddRabbitMqConfiguration(this IServiceCollection services)
+    private static IServiceCollection AddRabbitMqConfiguration(this IServiceCollection services, IConfiguration configuration)
     {
+        var rabbitMq = configuration.GetSection(RabbitMqOptions.SectionName).Get<RabbitMqOptions>();
+
         services.AddMassTransit(x =>
         {
-            x.AddConsumer<UserRegisteredConsumer>();
+            x.AddConsumers(typeof(DependencyInjection).Assembly);
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                cfg.Host("localhost", "/", h =>
+                cfg.Host(rabbitMq!.Host, "/", h =>
                 {
-                    h.Username("guest");
-                    h.Password("guest");
+                    h.Username(rabbitMq.UserName);
+                    h.Password(rabbitMq.Password);
                 });
 
-                cfg.ReceiveEndpoint("user-registered-queue", e =>
-                {
-                    e.Bind("user-registered-event");
-                    e.ConfigureConsumer<UserRegisteredConsumer>(context);
-                });
+                cfg.ConfigureEndpoints(context);
             });
         });
 

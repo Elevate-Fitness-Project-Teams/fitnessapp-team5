@@ -11,9 +11,9 @@ public class CreateUserProfileCommandHandler(IUnitOfWork unitOfWork) : IRequestH
         var userProfile = UserProfile.
             Create(request.UserId, request.FirstName, request.LastName, request.Email, request.Phone);
 
-        var preferences = new UserPreference { UserId = request.UserId };
-        var notifications = new NotificationSetting { UserId = request.UserId };
-        var privacy = new PrivacySetting { UserId = request.UserId };
+        var preferences = UserPreference.CreateStub(request.UserId);
+        var notifications = NotificationSetting.CreateStub(request.UserId);
+        var privacy = PrivacySetting.CreateStub(request.UserId);
 
         await unitOfWork.Repository<UserProfile>().AddAsync(userProfile, cancellationToken);
         await unitOfWork.Repository<UserPreference>().AddAsync(preferences, cancellationToken);

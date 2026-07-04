@@ -1,4 +1,3 @@
-using System.Text;
 using AuthenticationService.Common;
 using AuthenticationService.Features.Commands.Register;
 using AuthenticationService.Persistence;
@@ -13,11 +12,14 @@ using AuthenticationService.Services.OtpCode;
 using AuthenticationService.Services.Password;
 using AuthenticationService.Services.RefreshToken;
 using AuthenticationService.Services.ResetToken;
+using Bulk.Shared.Settings;
 using FluentValidation;
+using MassTransit;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace AuthenticationService.Extensions;
 
@@ -31,6 +33,24 @@ public static class ServiceCollectionExtensions
         //#region Controllers
         //services.AddControllers();
         //#endregion
+
+        //RabbitMq 
+        var rabbitMq = configuration
+            .GetSection(RabbitMqOptions.SectionName)
+            .Get<RabbitMqOptions>()
+            ?? throw new InvalidOperationException("RabbitMQ config is missing");
+
+        services.AddMassTransit(x =>
+        {
+            x.UsingRabbitMq((context, cfg) =>
+            {
+                cfg.Host(rabbitMq.Host, "/", h =>
+                {
+                    h.Username(rabbitMq.UserName);
+                    h.Password(rabbitMq.Password);
+                });
+            });
+        });
 
         #region OpenAPI + Scalar (.NET 10)
 

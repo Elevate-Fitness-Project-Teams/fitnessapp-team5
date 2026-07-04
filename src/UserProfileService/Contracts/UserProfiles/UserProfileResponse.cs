@@ -5,5 +5,6 @@ public record UserProfileResponse(
     string FirstName,
     string LastName,
     string Email,
-    string PhoneNumber
+    string Phone,
+    string ProfilePictureUrl
 );
