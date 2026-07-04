@@ -1,4 +1,4 @@
-﻿using UserProfileService.Impelementation.Repositories;
+﻿using UserProfileService.Implementation.Repositories;
 using UserProfileService.Interfaces;
 using UserProfileService.Interfaces.Repositories;
 using UserProfileService.Persistence;
@@ -9,14 +9,14 @@ public class UnitOfWork(ApplicationDbContext context) : IUnitOfWork
 {
     private readonly Dictionary<Type, object> _repositories = [];
 
-    public IUserProfileRepository<T> Repository<T>() where T : class
+    public IGenericRepository<T> Repository<T>() where T : class
     {
         var type = typeof(T);
 
         if (_repositories.TryGetValue(type, out var repository))
-            return (IUserProfileRepository<T>)repository;
+            return (IGenericRepository<T>)repository;
 
-        var newRepo = new UserProfileRepository<T>(context);
+        var newRepo = new GenericRepository<T>(context);
 
         _repositories.Add(type, newRepo);
 

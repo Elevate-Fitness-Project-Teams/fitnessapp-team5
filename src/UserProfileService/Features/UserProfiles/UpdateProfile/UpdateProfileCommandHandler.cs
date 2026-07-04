@@ -12,18 +12,6 @@ internal class UpdateProfileCommandHandler(IUnitOfWork unitOfWork, ICurrentUser 
 {
     public async Task<Result> Handle(UpdateProfileCommand request, CancellationToken cancellationToken)
     {
-        //var emailIsExists = await unitOfWork
-        //    .Repository<UserProfile>()
-        //    .GetQueryable()
-        //    .AnyAsync(, cancellationToken);
-
-        //if (emailIsExists)
-        //    return Result.Failure(UserErrors.EmailIsExists);
-
-        //var profile = UserProfile.CreateInstance(currentUser.Id);
-        //profile.Update(request.FirstName, request.LastName, request.Phone);
-
-
         var rowsAffected = await unitOfWork
             .Repository<UserProfile>()
             .GetQueryable()
@@ -34,9 +22,8 @@ internal class UpdateProfileCommandHandler(IUnitOfWork unitOfWork, ICurrentUser 
             .SetProperty(x => x.Phone, request.Phone)
             , cancellationToken);
 
-
-
-        //await unitOfWork.SaveChangesAsync(cancellationToken);
+        if (rowsAffected == 0)
+            return Result.Failure(UserErrors.NotFound);
 
         return Result.Success();
     }

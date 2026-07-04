@@ -14,7 +14,7 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      //"launchBrowser": true,
+      "launchBrowser": true,
       "launchUrl": "scalar",
       "dotnetRunMessages": true,
       "applicationUrl": "https://localhost:7217;http://localhost:5041"
@@ -31,7 +31,7 @@
     },
     "IIS Express": {
       "commandName": "IISExpress",
-      //"launchBrowser": true,
+      "launchBrowser": true,
       "launchUrl": "scalar",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"

@@ -1,6 +1,5 @@
 ﻿using Carter;
 using MediatR;
-using Microsoft.AspNetCore.Mvc;
 using UserProfileService.Contracts.UserProfiles;
 using UserProfileService.Extensions;
 
@@ -10,11 +9,11 @@ public class GetUserProfileEndpoint : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("api/v1/me/{userId:guid}", async ([FromRoute] Guid userId, ISender sender, CancellationToken cancellationToken) =>
+        app.MapGet("api/v1/me", async (ISender sender, CancellationToken cancellationToken) =>
         {
             var result = await sender.Send(new GetUserProfileQuery(), cancellationToken);
 
-            return result.ToResult();
+            return result.ToHandleResult();
         })
          .WithName("GetUserProfile")
          .WithTags("UserProfile")

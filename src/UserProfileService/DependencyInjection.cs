@@ -1,12 +1,16 @@
 ﻿using Bulk.Shared.Settings;
 using Carter;
+using FluentValidation;
 using Mapster;
 using MapsterMapper;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 using System.Text;
+using UserProfileService.Abstractions;
+using UserProfileService.Exceptions;
 using UserProfileService.Implementation;
 using UserProfileService.Implementation.Services;
 using UserProfileService.Interfaces;
@@ -26,11 +30,26 @@ public static class DependencyInjection
         var connectionString = configuration.GetConnectionString("DefaultConnection")
             ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-        services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
+        services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseSqlServer(connectionString)
+        .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
+
+        var allowedOrigins = configuration.GetSection("AllowedOrigins").Get<string[]>();
+
+        services.AddCors(options =>
+            options.AddDefaultPolicy(builder =>
+                builder
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .WithOrigins(allowedOrigins!)
+            )
+        );
+
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         services.AddScoped<ICurrentUser, CurrentUser>();
+        services.AddScoped<IFileService, FileService>();
 
         services.AddHttpContextAccessor();
         services.AddProblemDetails();
@@ -46,10 +65,17 @@ public static class DependencyInjection
 
         services.AddSingleton<IMapper>(new Mapper(mappingConfiguration));
 
+        services.AddExceptionHandler<ValidationExceptionHandler>();
+        services.AddExceptionHandler<GlobalExceptionHandler>();
+
+        services.AddFluentValidationAutoValidation()
+            .AddValidatorsFromAssembly(assembly);
+
         //Add MediatR
         services.AddMediatR(cfg =>
         {
             cfg.RegisterServicesFromAssembly(assembly);
+            cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
         });
 
         return services;

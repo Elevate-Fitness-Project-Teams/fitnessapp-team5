@@ -5,27 +5,28 @@ using Microsoft.AspNetCore.Mvc;
 using UserProfileService.Contracts.UserProfiles;
 using UserProfileService.Extensions;
 
-namespace UserProfileService.Features.UserProfiles.UpdateProfile;
+namespace UserProfileService.Features.UserProfiles.UploadProfilePicture;
 
-public class UpdateProfileEndpoint : ICarterModule
+public class UploadProfilePictureEndpoint : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPut("api/v1/me", async ([FromBody] UpdateProfileRequest request, ISender sender, CancellationToken cancellationToken) =>
+        app.MapPost("/api/v1/me/picture", async ([FromForm] UploadPictureRequest request,
+            ISender sender, CancellationToken cancellationToken) =>
         {
-            var command = request.Adapt<UpdateProfileCommand>();
+            var command = request.Adapt<UploadProfilePictureCommand>();
 
             var result = await sender.Send(command, cancellationToken);
 
             return result.ToHandleResult();
         })
-        .WithName("UpdateProfile")
+        .WithName("UserPicture")
         .WithTags("UserProfile")
         .RequireAuthorization()
+        .DisableAntiforgery()
         .Produces(StatusCodes.Status200OK)
         .ProducesValidationProblem()
         .ProducesProblem(StatusCodes.Status401Unauthorized)
-        .ProducesProblem(StatusCodes.Status404NotFound)
-        .ProducesProblem(StatusCodes.Status409Conflict);
+        .ProducesProblem(StatusCodes.Status400BadRequest);
     }
 }

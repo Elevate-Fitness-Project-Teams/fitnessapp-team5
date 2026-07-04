@@ -4,7 +4,7 @@ namespace UserProfileService.Extensions;
 
 public static class ResultExtensions
 {
-    public static IResult ToResult(this Result result)
+    public static IResult ToHandleResult(this Result result)
     {
         if (result.IsSuccess)
             return Results.Ok(CreateSuccess(null));
@@ -12,7 +12,7 @@ public static class ResultExtensions
         return CreateFailure(result.Error);
     }
 
-    public static IResult ToResult<T>(this Result<T> result)
+    public static IResult ToHandleResult<T>(this Result<T> result)
     {
         if (result.IsSuccess)
             return Results.Ok(CreateSuccess(result.Value));
