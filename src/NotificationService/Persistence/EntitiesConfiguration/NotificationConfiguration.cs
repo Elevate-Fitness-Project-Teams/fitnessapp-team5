@@ -4,9 +4,9 @@ using NotificationService.Entities;
 
 namespace NotificationService.Persistence.EntitiesConfiguration;
 
-public class InAppNotificationConfiguration : IEntityTypeConfiguration<InAppNotification>
+public class NotificationConfiguration : IEntityTypeConfiguration<Notification>
 {
-    public void Configure(EntityTypeBuilder<InAppNotification> builder)
+    public void Configure(EntityTypeBuilder<Notification> builder)
     {
         builder.Property(x => x.Title)
             .HasMaxLength(150);

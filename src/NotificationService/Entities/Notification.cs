@@ -2,7 +2,7 @@
 
 namespace NotificationService.Entities;
 
-public class InAppNotification
+public class Notification
 {
     public int Id { get; set; }
     public Guid UserId { get; set; }
@@ -12,9 +12,9 @@ public class InAppNotification
     public bool IsRead { get; set; }
     public DateTime SentAt { get; set; }
 
-    private InAppNotification() { }
+    private Notification() { }
 
-    public static InAppNotification Create(Guid userId, string title, string message, NotificationType type) =>
+    public static Notification Create(Guid userId, string title, string message, NotificationType type) =>
         new()
         {
             UserId = userId,

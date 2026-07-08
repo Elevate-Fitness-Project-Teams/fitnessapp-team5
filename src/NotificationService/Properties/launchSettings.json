@@ -9,6 +9,8 @@
       "applicationUrl": "http://localhost:5067"
     },
     "https": {
+      "launchBrowser": true,
+      "launchUrl": "scalar",
       "commandName": "Project",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"

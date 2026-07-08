@@ -1,6 +1,4 @@
 using AuthenticationService.Extensions;
-using AuthenticationService.Features;
-using MassTransit;
 using Scalar.AspNetCore;
 
 namespace AuthenticationService
