@@ -1,4 +1,4 @@
-﻿namespace UserProfileService.Settings;
+﻿namespace NotificationService.Settings;
 
 public class JwtOptions
 {
