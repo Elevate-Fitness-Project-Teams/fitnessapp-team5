@@ -21,7 +21,6 @@ public class GetNotificationsEndpoint : ICarterModule
         .Produces(StatusCodes.Status200OK)
         //.ProducesValidationProblem()
         .ProducesProblem(StatusCodes.Status401Unauthorized)
-        .ProducesProblem(StatusCodes.Status404NotFound)
-        .ProducesProblem(StatusCodes.Status409Conflict);
+        .ProducesProblem(StatusCodes.Status404NotFound);
     }
 }

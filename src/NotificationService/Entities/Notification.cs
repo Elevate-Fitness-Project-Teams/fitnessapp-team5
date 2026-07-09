@@ -13,21 +13,4 @@ public class Notification
     public DateTime SentAt { get; set; }
 
     private Notification() { }
-
-    public static Notification Create(Guid userId, string title, string message, NotificationType type) =>
-        new()
-        {
-            UserId = userId,
-            Title = title,
-            Message = message,
-            Type = type,
-            IsRead = false,
-            SentAt = DateTime.UtcNow
-        };
-
-    public void MarkAsRead()
-    {
-        if (!IsRead)
-            IsRead = true;
-    }
 }
