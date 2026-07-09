@@ -8,16 +8,20 @@ namespace FCEService.Domain.Entities.UserPlanHistory
     public class UserPlanHistory : AuditableEntity
     {
         public Guid UserId { get; private set; }
-        public string PlanId { get; private set; }
+        public Guid PlanId { get; private set; }
         public DateTime? EndedAt { get; private set; }
         public string ReasonForChange { get; private set; }
 
-        private UserPlanHistory() { }
+        private UserPlanHistory() 
+        {
+            ReasonForChange = string.Empty;
+        }
 
+        [System.Diagnostics.CodeAnalysis.SetsRequiredMembers]
         private UserPlanHistory(
             Guid id,
             Guid userId,
-            string planId,
+            Guid planId,
             DateTime? endedAt,
             string reasonForChange,
             string createdBy) : base(id)
@@ -32,7 +36,7 @@ namespace FCEService.Domain.Entities.UserPlanHistory
 
         public static Result<UserPlanHistory> Create(
             Guid userId,
-            string planId,
+            Guid planId,
             string reasonForChange,
             string createdBy)
         {
@@ -43,13 +47,9 @@ namespace FCEService.Domain.Entities.UserPlanHistory
                 errors.Add(UserPlanHistoryErrors.UserIdRequired);
             }
 
-            if (string.IsNullOrWhiteSpace(planId))
+            if (planId == Guid.Empty)
             {
                 errors.Add(UserPlanHistoryErrors.PlanIdRequired);
-            }
-            else if (planId.Length > 50)
-            {
-                errors.Add(UserPlanHistoryErrors.PlanIdTooLong);
             }
 
             if (string.IsNullOrWhiteSpace(reasonForChange))

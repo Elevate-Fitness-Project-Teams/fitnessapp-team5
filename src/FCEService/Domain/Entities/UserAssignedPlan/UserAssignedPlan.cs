@@ -2,21 +2,23 @@ using System;
 using System.Collections.Generic;
 using FCEService.Domain.Common;
 using FCEService.Domain.Common.Results;
+using FCEService.Domain.Entities.UserAssignedPlan;
 
 namespace FCEService.Domain.Entities.UserAssignedPlan
 {
     public class UserAssignedPlan : AuditableEntity
     {
         public Guid UserId { get; private set; }
-        public string PlanId { get; private set; }
+        public Guid PlanId { get; private set; }
         public bool IsActive { get; private set; }
 
         private UserAssignedPlan() { }
 
+        [System.Diagnostics.CodeAnalysis.SetsRequiredMembers]
         private UserAssignedPlan(
             Guid id,
             Guid userId,
-            string planId,
+            Guid planId,
             bool isActive,
             string createdBy) : base(id)
         {
@@ -29,7 +31,8 @@ namespace FCEService.Domain.Entities.UserAssignedPlan
 
         public static Result<UserAssignedPlan> Create(
             Guid userId,
-            string planId,
+            Guid planId,
+            string planName,
             string createdBy,
             bool isActive = true)
         {
@@ -40,13 +43,9 @@ namespace FCEService.Domain.Entities.UserAssignedPlan
                 errors.Add(UserAssignedPlanErrors.UserIdRequired);
             }
 
-            if (string.IsNullOrWhiteSpace(planId))
+            if (planId == Guid.Empty)
             {
                 errors.Add(UserAssignedPlanErrors.PlanIdRequired);
-            }
-            else if (planId.Length > 50)
-            {
-                errors.Add(UserAssignedPlanErrors.PlanIdTooLong);
             }
 
             if (errors.Count > 0)
@@ -54,12 +53,17 @@ namespace FCEService.Domain.Entities.UserAssignedPlan
                 return errors;
             }
 
-            return new UserAssignedPlan(
+            var plan = new UserAssignedPlan(
                 Guid.NewGuid(),
                 userId,
                 planId,
                 isActive,
                 createdBy);
+
+            // Raises the bridge event → MassTransit handler will publish Integration Event
+            plan.AddDomainEvent(new UserAssignedPlanCreatedDomainEvent(userId, planId, planName));
+
+            return plan;
         }
 
         public void Deactivate(string modifiedBy)

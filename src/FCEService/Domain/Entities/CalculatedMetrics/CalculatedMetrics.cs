@@ -17,6 +17,7 @@ namespace FCEService.Domain.Entities.CalculatedMetrics
 
         private CalculatedMetrics() { }
 
+        [System.Diagnostics.CodeAnalysis.SetsRequiredMembers]
         private CalculatedMetrics(
             Guid id,
             Guid userId,
@@ -70,7 +71,7 @@ namespace FCEService.Domain.Entities.CalculatedMetrics
                 return errors;
             }
 
-            return new CalculatedMetrics(
+            var entity = new CalculatedMetrics(
                 Guid.NewGuid(),
                 userId,
                 bmr,
@@ -78,6 +79,10 @@ namespace FCEService.Domain.Entities.CalculatedMetrics
                 calorieTarget,
                 status,
                 createdBy);
+
+            entity.AddDomainEvent(new CalculatedMetricsCreatedDomainEvent(userId, status, calorieTarget));
+
+            return entity;
         }
 
         public Result<CalculatedMetrics> Update(
@@ -85,7 +90,9 @@ namespace FCEService.Domain.Entities.CalculatedMetrics
             double tdee,
             double calorieTarget,
             FitnessStatus status,
-            string modifiedBy)
+            string modifiedBy,
+            FCEService.Domain.Entities.UserFitnessStats.FitnessUpdateReason reason,
+            FCEService.Domain.Enums.Goal goal)
         {
             var errors = new List<Error>();
 
@@ -116,94 +123,11 @@ namespace FCEService.Domain.Entities.CalculatedMetrics
             LastModifiedUtc = DateTimeOffset.UtcNow;
             LastModifiedBy = modifiedBy;
 
+            AddDomainEvent(new CalculatedMetricsUpdatedDomainEvent(UserId, status, calorieTarget, reason, goal));
+
             return this;
         }
 
-        public static Result<CalculatedMetrics> Calculate(UserFitnessStats.UserFitnessStats stats, string createdBy)
-        {
-            if (stats == null)
-            {
-                return CalculatedMetricsErrors.NullStats;
-            }
 
-            double bmr;
-            if (stats.Gender == Gender.Male)
-            {
-                bmr = (FCEConstants.Bmr.WeightMultiplier * stats.Weight) 
-                    + (FCEConstants.Bmr.HeightMultiplier * stats.Height) 
-                    - (FCEConstants.Bmr.AgeMultiplier * stats.Age) 
-                    + FCEConstants.Bmr.MaleOffset;
-            }
-            else
-            {
-                bmr = (FCEConstants.Bmr.WeightMultiplier * stats.Weight) 
-                    + (FCEConstants.Bmr.HeightMultiplier * stats.Height) 
-                    - (FCEConstants.Bmr.AgeMultiplier * stats.Age) 
-                    - FCEConstants.Bmr.FemaleOffset;
-            }
-
-            double multiplier;
-            switch (stats.ActivityLevel)
-            {
-                case ActivityLevel.Rookie:
-                    multiplier = FCEConstants.ActivityMultipliers.Rookie;
-                    break;
-                case ActivityLevel.Beginner:
-                    multiplier = FCEConstants.ActivityMultipliers.Beginner;
-                    break;
-                case ActivityLevel.Intermediate:
-                    multiplier = FCEConstants.ActivityMultipliers.Intermediate;
-                    break;
-                case ActivityLevel.Advance:
-                    multiplier = FCEConstants.ActivityMultipliers.Advance;
-                    break;
-                case ActivityLevel.TrueBeast:
-                    multiplier = FCEConstants.ActivityMultipliers.TrueBeast;
-                    break;
-                default:
-                    return CalculatedMetricsErrors.ActivityLevelInvalid;
-                
-            }
-
-            double tdee = bmr * multiplier;
-
-            double calorieTarget;
-            switch (stats.Goal)
-            {
-                case Goal.LoseWeight:
-                    calorieTarget = tdee + FCEConstants.CalorieAdjustments.LoseWeight;
-                    break;
-                case Goal.GetFitter:
-                    calorieTarget = tdee + FCEConstants.CalorieAdjustments.GetFitter;
-                    break;
-                case Goal.GainWeight:
-                    calorieTarget = tdee + FCEConstants.CalorieAdjustments.GainWeight;
-                    break;
-                case Goal.GainMoreFlexible:
-                    calorieTarget = tdee + FCEConstants.CalorieAdjustments.GainMoreFlexible;
-                    break;
-                case Goal.LearnTheBasic:
-                    calorieTarget = tdee + FCEConstants.CalorieAdjustments.LearnTheBasic;
-                    break;
-                default:
-                    return CalculatedMetricsErrors.GoalInvalid;
-            }
-
-            FitnessStatus status;
-            if (calorieTarget <= FCEConstants.StatusThresholds.WeakMax)
-            {
-                status = FitnessStatus.Weak;
-            }
-            else if (calorieTarget <= FCEConstants.StatusThresholds.NormalMax)
-            {
-                status = FitnessStatus.Normal;
-            }
-            else
-            {
-                status = FitnessStatus.Hard;
-            }
-
-            return Create(stats.UserId, bmr, tdee, calorieTarget, status, createdBy);
-        }
     }
 }

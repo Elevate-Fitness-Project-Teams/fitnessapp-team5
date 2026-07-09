@@ -1,6 +1,7 @@
-using FCEService.Domain.Common.Results.Abstractions;
 using System.ComponentModel;
 using System.Text.Json.Serialization;
+
+using FCEService.Domain.Common.Results.Abstractions;
 
 namespace FCEService.Domain.Common.Results;
 

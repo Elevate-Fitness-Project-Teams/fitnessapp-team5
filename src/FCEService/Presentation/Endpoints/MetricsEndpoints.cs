@@ -8,26 +8,14 @@ public static class MetricsEndpoints
 {
     public static void MapMetricsEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/v1/fitness")
-                       .WithTags("Metrics");
-                       //.RequireAuthorization();
+        var metricsGroup = app.MapGroup("/api/v1/fitness")
+            .WithTags("Metrics");
 
-        // POST /api/v1/fitness/calculate
-        group.MapPost("/calculate", async (IMediator mediator) =>
-        {
-            throw new NotImplementedException();
-        });
 
         // GET /api/v1/fitness/metrics/{userId}
-        group.MapGet("/metrics/{userId:int}", async (int userId, IMediator mediator) =>
+        metricsGroup.MapGet("/metrics/{userId:guid}", async (Guid userId, IMediator mediator, CancellationToken ct) =>
         {
-            throw new NotImplementedException();
-        });
-
-        // GET /api/v1/fitness/stats/{id}
-        group.MapGet("/stats/{id:guid}", async (Guid id, IMediator mediator, CancellationToken ct) =>
-        {
-            var query = new GetBiometricsByIdQuery(id);
+            var query = new FCEService.Application.Features.Metrics.Queries.GetMetricsByUserId.GetMetricsByUserIdQuery(userId);
             var result = await mediator.Send(query, ct);
             return result.Match(
                 (response) => Results.Ok(response),

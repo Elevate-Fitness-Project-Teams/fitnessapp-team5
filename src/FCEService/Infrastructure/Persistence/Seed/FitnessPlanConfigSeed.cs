@@ -14,7 +14,7 @@ namespace FCEService.Infrastructure.Persistence.Seed
             }
 
             var plan1Result = FitnessPlanConfig.Create(
-                "basic_weight_loss",
+                Guid.NewGuid(),
                 "Basic Weight Loss Plan",
                 "A beginner-friendly plan for losing weight.",
                 Goal.LoseWeight,
@@ -27,7 +27,7 @@ namespace FCEService.Infrastructure.Persistence.Seed
                 "System");
 
             var plan2Result = FitnessPlanConfig.Create(
-                "advanced_muscle_gain",
+                Guid.NewGuid(),
                 "Advanced Muscle Builder",
                 "Heavy lifting for serious muscle gains.",
                 Goal.GainWeight,
@@ -39,10 +39,24 @@ namespace FCEService.Infrastructure.Persistence.Seed
                 "Hypertrophy",
                 "System");
 
+            var plan3Result = FitnessPlanConfig.Create(
+                Guid.NewGuid(),
+                "Maintenance Plan",
+                "Keep your body healthy and fit.",
+                Goal.GetFitter,
+                FitnessStatus.Normal,
+                2000,
+                2600,
+                "Ongoing",
+                4,
+                "CrossFit",
+                "System");
+
             var plans = new List<FitnessPlanConfig>();
-            
+
             if (plan1Result.IsSuccess) plans.Add(plan1Result.Value);
             if (plan2Result.IsSuccess) plans.Add(plan2Result.Value);
+            if (plan3Result.IsSuccess) plans.Add(plan3Result.Value);
 
             if (plans.Count > 0)
             {

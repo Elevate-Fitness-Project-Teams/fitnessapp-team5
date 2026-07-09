@@ -1,19 +1,16 @@
-using FCEService.Domain.Entities.CalculatedMetrics;
-using FCEService.Domain.Entities.FitnessPlanConfig;
-using FCEService.Domain.Entities.UserAssignedPlan;
-using FCEService.Domain.Entities.UserFitnessStats;
-using FCEService.Domain.Entities.UserPlanHistory;
-using Microsoft.EntityFrameworkCore;
-
 namespace FCEService.Application.Common.Interfaces;
+
+using FCEService.Domain.Entities;
+using FCEService.Domain.Common.Results;
+using Microsoft.EntityFrameworkCore;
 
 public interface IAppDbContext
 {
-    DbSet<UserFitnessStats> UserFitnessStats { get; }
-    DbSet<CalculatedMetrics> CalculatedMetrics { get; }
-    DbSet<FitnessPlanConfig> FitnessPlanConfigs { get; }
-    DbSet<UserAssignedPlan> UserAssignedPlans { get; }
-    DbSet<UserPlanHistory> UserPlanHistories { get; }
-
+    DbSet<FCEService.Domain.Entities.UserFitnessStats.UserFitnessStats> UserFitnessStats { get; }
+    DbSet<FCEService.Domain.Entities.CalculatedMetrics.CalculatedMetrics> CalculatedMetrics { get; }
+    DbSet<FCEService.Domain.Entities.FitnessPlanConfig.FitnessPlanConfig> FitnessPlanConfigs { get; }
+    DbSet<FCEService.Domain.Entities.UserAssignedPlan.UserAssignedPlan> UserAssignedPlans { get; }
+    DbSet<FCEService.Domain.Entities.UserPlanHistory.UserPlanHistory> UserPlanHistories { get; }
+    Task<Result<Success>> ExecuteAsync(Func<Task<Result<Success>>> action);
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

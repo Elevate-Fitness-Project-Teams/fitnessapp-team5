@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace FCEService.Infrastructure.Persistence.Configurations
 {
-    public class CalculatedMetricsConfiguration : IEntityTypeConfiguration<CalculatedMetrics>
+    public sealed class CalculatedMetricsConfiguration : IEntityTypeConfiguration<CalculatedMetrics>
     {
         public void Configure(EntityTypeBuilder<CalculatedMetrics> builder)
         {
@@ -29,7 +29,8 @@ namespace FCEService.Infrastructure.Persistence.Configurations
                 .IsRequired();
 
             builder.Property(x => x.Status)
-                .HasConversion<int>()
+                .HasConversion<string>()
+                .HasMaxLength(20)
                 .IsRequired();
 
             builder.Property(x => x.CreatedBy)

@@ -3,23 +3,32 @@ using FCEService.Domain.Common;
 
 namespace FCEService.Domain.Entities.UserFitnessStats
 {
+    public enum FitnessUpdateReason
+    {
+        WeightOnly,       // From Progress Service — do NOT touch plan
+        GoalChanged,      // User changed Goal — reassign plan immediately
+        UserRequested     // User manually updated + clicked "Request New Plan" after cooldown
+    }
+
     public sealed class UserFitnessStatsCreatedDomainEvent : DomainEvent
     {
-        public UserFitnessStats UserFitnessStats { get; }
+        public UserFitnessStats Stats { get; }
 
-        public UserFitnessStatsCreatedDomainEvent(UserFitnessStats userFitnessStats)
+        public UserFitnessStatsCreatedDomainEvent(UserFitnessStats stats)
         {
-            UserFitnessStats = userFitnessStats;
+            Stats = stats;
         }
     }
 
     public sealed class UserFitnessStatsUpdatedDomainEvent : DomainEvent
     {
-        public UserFitnessStats UserFitnessStats { get; }
+        public UserFitnessStats Stats { get; }
+        public FitnessUpdateReason Reason { get; }
 
-        public UserFitnessStatsUpdatedDomainEvent(UserFitnessStats userFitnessStats)
+        public UserFitnessStatsUpdatedDomainEvent(UserFitnessStats stats, FitnessUpdateReason reason)
         {
-            UserFitnessStats = userFitnessStats;
+            Stats = stats;
+            Reason = reason;
         }
     }
 }

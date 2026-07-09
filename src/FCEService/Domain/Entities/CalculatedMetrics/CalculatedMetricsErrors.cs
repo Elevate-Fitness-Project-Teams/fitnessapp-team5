@@ -12,5 +12,6 @@ namespace FCEService.Domain.Entities.CalculatedMetrics
         public static Error GenderInvalid => Error.Validation(nameof(GenderInvalid), "Gender is invalid.");
         public static Error ActivityLevelInvalid => Error.Validation(nameof(ActivityLevelInvalid), "Activity level is invalid.");
         public static Error GoalInvalid => Error.Validation(nameof(GoalInvalid), "Goal is invalid.");
+        public static Error NotFound => Error.NotFound(nameof(NotFound), "Calculated metrics for the given user were not found.");
     }
 }

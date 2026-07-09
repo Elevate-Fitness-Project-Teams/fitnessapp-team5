@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace FCEService.Infrastructure.Persistence.Configurations
 {
-    public class FitnessPlanConfigConfiguration : IEntityTypeConfiguration<FitnessPlanConfig>
+    public sealed class FitnessPlanConfigConfiguration : IEntityTypeConfiguration<FitnessPlanConfig>
     {
         public void Configure(EntityTypeBuilder<FitnessPlanConfig> builder)
         {
