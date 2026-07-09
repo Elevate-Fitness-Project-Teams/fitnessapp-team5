@@ -1,6 +1,6 @@
 using FCEService.Domain.Common.Results;
-using MediatR;
 using FCEService.Domain.Enums; // Assuming you have these enums defined
+using MediatR;
 
 namespace FCEService.Application.Features.Biometrics.Commands.IngestBiometrics;
 
@@ -12,4 +12,4 @@ public sealed record IngestBiometricsCommand(
     Gender Gender,
     Goal Goal,
     ActivityLevel ActivityLevel
-) : IRequest<Result<Success>>; 
+) : IRequest<Result<Success>>;

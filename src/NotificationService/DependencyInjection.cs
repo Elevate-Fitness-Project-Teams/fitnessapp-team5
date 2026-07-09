@@ -5,7 +5,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using NotificationService.Implementations;
+using NotificationService.Implementations.Services;
 using NotificationService.InterFaces;
+using NotificationService.InterFaces.Services;
 using NotificationService.Persistence;
 using NotificationService.Settings;
 using System.Text;
@@ -37,6 +39,7 @@ public static class DependencyInjection
         services.AddSingleton<IMapper>(new Mapper(mappingConfiguration));
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<ICurrentUser, CurrentUser>();
 
         return services;
     }

@@ -1,8 +1,8 @@
-using MediatR;
-using Microsoft.AspNetCore.Mvc;
 using FCEService.Application.Features.Biometrics.Commands.IngestBiometrics;
 using FCEService.Common;
 using FCEService.Presentation.Extensions;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
 
 namespace FCEService.Presentation.Endpoints;
 
@@ -12,7 +12,7 @@ public static class BiometricsEndpoints
     {
         var group = app.MapGroup("/api/v1/fitness")
                        .WithTags("Biometrics");
-                       //.RequireAuthorization();
+        //.RequireAuthorization();
 
         // POST /api/v1/fitness/weight-goal-activity
         // Stores user biometrics: weight, height, age, gender, goal, activity level
@@ -28,18 +28,16 @@ public static class BiometricsEndpoints
 
     }
 
-    private static async Task <IResult> CreateBiometrics(
-    [FromBody] IngestBiometricsCommand command,
-    CancellationToken cancellationToken,
+    private static async Task<IResult> CreateBiometrics([FromBody] IngestBiometricsCommand command, CancellationToken cancellationToken,
     IMediator mediator)
     {
-         var result = await mediator.Send(command,cancellationToken);
+        var result = await mediator.Send(command, cancellationToken);
 
-             return result.Match(
-            (_ )=>Results.Ok(new ApiResponse<string> { IsSuccess = true, Message = "Biometrics saved." }),
-            (errors)=>errors.ToProblem()
-         );
-    }   
+        return result.Match(
+        _ => Results.Ok(new ApiResponse<string> { IsSuccess = true, Message = "Biometrics saved." }),
+       (errors) => errors.ToProblem()
+    );
+    }
 
 
 }

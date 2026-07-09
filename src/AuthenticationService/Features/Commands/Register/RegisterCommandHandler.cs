@@ -57,6 +57,8 @@ namespace AuthenticationService.Features.Commands.Register
             // Save
             _userRepository.Add(user);
 
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
             await publishEndpoint.Publish(new UserRegisteredEvent(
                 user.Id,
                 request.FirstName,
@@ -64,8 +66,6 @@ namespace AuthenticationService.Features.Commands.Register
                 request.Email,
                 request.PhoneNumber
                 ), cancellationToken);
-
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             // Response
             return RequestResult<RegisterResponse>.Success(
