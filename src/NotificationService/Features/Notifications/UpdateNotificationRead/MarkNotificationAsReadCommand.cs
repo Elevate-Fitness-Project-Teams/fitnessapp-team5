@@ -8,9 +8,7 @@ using NotificationService.InterFaces.Services;
 
 namespace NotificationService.Features.Notifications.UpdateNotificationRead;
 
-public record MarkNotificationAsReadCommand(
-    int Id
-) : IRequest<Result>;
+public record MarkNotificationAsReadCommand(int Id) : IRequest<Result>;
 
 public class MarkNotificationAsReadCommandHandler(IUnitOfWork unitOfWork, ICurrentUser currentUser)
     : IRequestHandler<MarkNotificationAsReadCommand, Result>
