@@ -1,5 +1,6 @@
 using FCEService.Application.Common.Interfaces;
 using FCEService.Domain.Common.Results;
+using FCEService.Domain.Entities.CalculatedMetrics;
 using FCEService.Domain.Entities.UserFitnessStats;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -39,7 +40,7 @@ internal sealed class UpdateUserFitnessStatsCommandHandler(IAppDbContext db)
             return UserFitnessStatsErrors.UserNotFound;
 
         if (metricsTask.Result is null)
-            return Domain.Entities.CalculatedMetrics.CalculatedMetricsErrors.NotFound;
+            return CalculatedMetricsErrors.NotFound;
 
         var stats = statsTask.Result;
         var activePlan = activePlanTask.Result;
@@ -78,16 +79,8 @@ internal sealed class UpdateUserFitnessStatsCommandHandler(IAppDbContext db)
             return updateResult.Errors;
 
         // Save — Domain Events fire automatically via interceptor.
-        // Using ExecuteAsync keeps error handling consistent with the Result pattern
-        // so no unhandled exceptions escape this handler.
-        var saveResult = await db.ExecuteAsync(async () =>
-        {
-            await Task.CompletedTask;
-            return Result.Success;
-        });
-
-        if (saveResult.IsError)
-            return saveResult.Errors;
+        // Event handlers resolve CalculatedMetrics + UserAssignedPlan from Identity Map — no extra DB queries.
+        await db.SaveChangesAsync(cancellationToken);
 
         return Unit.Value;
     }

@@ -8,7 +8,8 @@ public static class PlanEndpoints
     public static void MapPlanEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/v1/fitness")
-                       .WithTags("Plans");
+                       .WithTags("Plans")
+                       .RequireAuthorization(); // Fix #10: BOLA prevention
 
         // GET /api/v1/fitness/plan-configs
         group.MapGet("/plan-configs", async (int? pageNumber, int? pageSize, IMediator mediator, CancellationToken ct) =>
@@ -44,13 +45,9 @@ public static class PlanEndpoints
         });
 
         // POST /api/v1/fitness/assign-plan
-        group.MapPost("/assign-plan", async (Microsoft.AspNetCore.Http.HttpContext httpContext, IMediator mediator, CancellationToken ct) =>
+        group.MapPost("/assign-plan", async ([Microsoft.AspNetCore.Mvc.FromBody] AssignPlanRequest request, IMediator mediator, CancellationToken ct) =>
         {
-            var userIdString = httpContext.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-             if (!Guid.TryParse(userIdString, out var userId))
-                return Results.Unauthorized();
-
-            var command = new FCEService.Application.Features.Plans.Commands.AssignPlan.AssignPlanCommand(userId);
+            var command = new FCEService.Application.Features.Plans.Commands.AssignPlan.AssignPlanCommand(request.UserId);
             var result = await mediator.Send(command, ct);
             return result.Match(
                 (_) => Results.Ok(FCEService.Common.ApiResponse<Unit>.Success(Unit.Value, "Plan assigned successfully.")),
