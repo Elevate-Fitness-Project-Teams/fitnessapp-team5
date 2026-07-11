@@ -2,44 +2,39 @@ using FluentValidation;
 
 namespace FCEService.Application.Features.Biometrics.Commands.RegisterUserFitness;
 
-using FCEService.Domain.Common.Constants;
-
+/// <summary>
+/// Contract-level validation ONLY — checks that the request is well-formed before hitting the Domain.
+/// Business rule validation (weight ranges, age limits, valid enum values) lives in UserFitnessStats.Create().
+/// This prevents double-validation and keeps a single source of truth for domain rules.
+/// </summary>
 public sealed class RegisterUserFitnessCommandValidator : AbstractValidator<RegisterUserFitnessCommand>
 {
     public RegisterUserFitnessCommandValidator()
     {
+        // Contract: UserId must be a real Guid, not the default empty value
         RuleFor(x => x.UserId)
             .NotEqual(Guid.Empty).WithMessage("UserId is required.");
 
-        RuleFor(x => x.BirthDate)
-            .Must(BeAtLeast16YearsOld).WithMessage($"Age must be at least {FCEConstants.Validation.MinAge}.");
-
+        // Contract: Weight, Height must be provided (non-zero) — range is validated by the Domain
         RuleFor(x => x.Weight)
-            .InclusiveBetween(FCEConstants.Validation.MinWeight, FCEConstants.Validation.MaxWeight)
-            .WithMessage($"Weight must be between {FCEConstants.Validation.MinWeight} and {FCEConstants.Validation.MaxWeight} kg.");
+            .GreaterThan(0).WithMessage("Weight is required.");
 
         RuleFor(x => x.Height)
-            .InclusiveBetween(FCEConstants.Validation.MinHeight, FCEConstants.Validation.MaxHeight)
-            .WithMessage($"Height must be between {FCEConstants.Validation.MinHeight} and {FCEConstants.Validation.MaxHeight} cm.");
+            .GreaterThan(0).WithMessage("Height is required.");
 
+        // Contract: BirthDate must be provided
+        RuleFor(x => x.BirthDate)
+            .NotEmpty().WithMessage("Birth date is required.")
+            .LessThan(DateTime.UtcNow).WithMessage("Birth date cannot be in the future.");
+
+        // Contract: Enum values must be defined (prevents garbage data crashing the Domain)
         RuleFor(x => x.Gender)
-            .IsInEnum().WithMessage("Invalid Gender.");
+            .IsInEnum().WithMessage("Invalid Gender value.");
 
         RuleFor(x => x.Goal)
-            .IsInEnum().WithMessage("Invalid Goal.");
+            .IsInEnum().WithMessage("Invalid Goal value.");
 
         RuleFor(x => x.ActivityLevel)
-            .IsInEnum().WithMessage("Invalid Activity Level.");
-    }
-
-    private bool BeAtLeast16YearsOld(DateTime birthDate)
-    {
-        var today = DateTime.UtcNow.Date;
-        var age = today.Year - birthDate.Year;
-        if (birthDate.Date > today.AddYears(-age))
-        {
-            age--;
-        }
-        return age >= 16;
+            .IsInEnum().WithMessage("Invalid Activity Level value.");
     }
 }

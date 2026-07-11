@@ -105,7 +105,7 @@ namespace FCEService.Domain.Entities.UserFitnessStats
             return this;
         }
 
-        public Result<UserFitnessStats> UpdateWeight(double newWeight)
+        public Result<UserFitnessStats> UpdateWeight(double newWeight, string modifiedBy = "system")
         {
             if (newWeight < FCEConstants.Validation.MinWeight || newWeight > FCEConstants.Validation.MaxWeight)
             {
@@ -114,7 +114,7 @@ namespace FCEService.Domain.Entities.UserFitnessStats
 
             Weight = newWeight;
             LastModifiedUtc = DateTimeOffset.UtcNow;
-            LastModifiedBy = "progress_service";
+            LastModifiedBy = modifiedBy; // explicit actor — never hard-coded
 
             AddDomainEvent(new UserFitnessStatsUpdatedDomainEvent(this, FitnessUpdateReason.WeightOnly));
 

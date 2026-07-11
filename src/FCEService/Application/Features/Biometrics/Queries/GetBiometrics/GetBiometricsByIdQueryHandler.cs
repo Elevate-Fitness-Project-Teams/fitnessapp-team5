@@ -13,18 +13,17 @@ public sealed class GetBiometricsByIdQueryHandler(IAppDbContext dbContext, ILogg
       GetBiometricsByIdQuery query,
        CancellationToken ct)
     {
-        logger.LogInformation("Getting UserFitnessStats for this UserId:{UserId}", query.UserId);
-
-        // Fix #3: AsNoTracking — read-only query for response construction
+        // LoggingBehaviour already logs every request — no need to log again here.
         var userFitnessStats = await dbContext.UserFitnessStats
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.UserId == query.UserId, ct);
-        if (userFitnessStats == null)
+
+        if (userFitnessStats is null)
         {
-            logger.LogWarning("UserFitnessStats for this UserId:{UserId} not found", query.UserId);
+            logger.LogWarning("UserFitnessStats not found for UserId: {UserId}", query.UserId);
             return UserFitnessStatsErrors.UserNotFound;
         }
-        logger.LogInformation("UserFitnessStats for this UserId:{UserId} found", query.UserId);
+
         return userFitnessStats.ToResponse();
     }
 }

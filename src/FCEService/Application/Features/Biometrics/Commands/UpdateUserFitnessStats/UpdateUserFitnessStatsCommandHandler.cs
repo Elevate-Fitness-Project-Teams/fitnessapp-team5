@@ -17,33 +17,29 @@ namespace FCEService.Application.Features.Biometrics.Commands.UpdateUserFitnessS
 ///   UserFitnessStatsUpdatedDomainEvent → recalculate CalculatedMetrics
 ///   CalculatedMetricsUpdatedDomainEvent(reason) → conditionally reassign plan
 /// </summary>
-internal sealed class UpdateUserFitnessStatsCommandHandler(IAppDbContext db)
+internal sealed class UpdateUserFitnessStatsCommandHandler(IAppDbContext db, ICurrentUser currentUser)
     : IRequestHandler<UpdateUserFitnessStatsCommand, Result<Unit>>
 {
     public async Task<Result<Unit>> Handle(UpdateUserFitnessStatsCommand request, CancellationToken cancellationToken)
     {
-        // Preload all needed entities in parallel — one connection round trip.
-        // CalculatedMetrics + UserAssignedPlan are cached in EF Core's Identity Map
-        // so downstream event handlers don't need extra DB queries.
-        var statsTask = db.UserFitnessStats
+        // Sequential awaits — DbContext is NOT thread-safe.
+        // Task.WhenAll on the same DbContext crashes under concurrent load
+        // with: "A second operation was started on this context instance"
+        var stats = await db.UserFitnessStats
             .FirstOrDefaultAsync(x => x.UserId == request.UserId, cancellationToken);
 
-        var metricsTask = db.CalculatedMetrics
+        var metrics = await db.CalculatedMetrics
             .FirstOrDefaultAsync(x => x.UserId == request.UserId, cancellationToken);
 
-        var activePlanTask = db.UserAssignedPlans
+        var activePlan = await db.UserAssignedPlans
             .FirstOrDefaultAsync(x => x.UserId == request.UserId && x.IsActive, cancellationToken);
 
-        await Task.WhenAll(statsTask, metricsTask, activePlanTask);
 
-        if (statsTask.Result is null)
+        if (stats is null)
             return UserFitnessStatsErrors.UserNotFound;
 
-        if (metricsTask.Result is null)
+        if (metrics is null)
             return CalculatedMetricsErrors.NotFound;
-
-        var stats = statsTask.Result;
-        var activePlan = activePlanTask.Result;
 
         // Determine reason BEFORE updating
         FitnessUpdateReason reason;
@@ -72,7 +68,7 @@ internal sealed class UpdateUserFitnessStatsCommandHandler(IAppDbContext db)
             request.Gender,
             request.Goal,
             request.ActivityLevel,
-            "user",
+            currentUser.Id.ToString(),
             reason);
 
         if (updateResult.IsError)

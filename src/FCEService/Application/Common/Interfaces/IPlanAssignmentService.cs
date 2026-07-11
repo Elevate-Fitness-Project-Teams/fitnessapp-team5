@@ -14,5 +14,6 @@ public interface IPlanAssignmentService
         Goal goal,
         FitnessStatus status,
         string reasonForChange,
-        CancellationToken ct);
+        CancellationToken ct,
+        string modifiedBy = "system");
 }
