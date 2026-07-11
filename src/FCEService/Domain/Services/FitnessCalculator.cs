@@ -7,6 +7,23 @@ namespace FCEService.Domain.Services;
 
 public static class FitnessCalculator
 {
+    // Dictionary replaces the switch — adding a new ActivityLevel requires only one line here
+    private static readonly Dictionary<ActivityLevel, double> _activityMultipliers = new()
+    {
+        { ActivityLevel.Rookie,       FCEConstants.ActivityMultipliers.Rookie },
+        { ActivityLevel.Beginner,     FCEConstants.ActivityMultipliers.Beginner },
+        { ActivityLevel.Intermediate, FCEConstants.ActivityMultipliers.Intermediate },
+        { ActivityLevel.Advance,      FCEConstants.ActivityMultipliers.Advance },
+        { ActivityLevel.TrueBeast,    FCEConstants.ActivityMultipliers.TrueBeast },
+    };
+
+    private static readonly Dictionary<Goal, double> _calorieAdjustments = new()
+    {
+        { Goal.LoseWeight, FCEConstants.CalorieAdjustments.LoseWeight },
+        { Goal.GetFitter,  FCEConstants.CalorieAdjustments.GetFitter },
+        { Goal.GainWeight, FCEConstants.CalorieAdjustments.GainWeight },
+    };
+
     public static double CalculateBmr(double weight, double height, int age, Gender gender)
     {
         if (gender == Gender.Male)
@@ -27,59 +44,26 @@ public static class FitnessCalculator
 
     public static Result<double> CalculateTdee(double bmr, ActivityLevel activityLevel)
     {
-        double multiplier;
-        switch (activityLevel)
-        {
-            case ActivityLevel.Rookie:
-                multiplier = FCEConstants.ActivityMultipliers.Rookie;
-                break;
-            case ActivityLevel.Beginner:
-                multiplier = FCEConstants.ActivityMultipliers.Beginner;
-                break;
-            case ActivityLevel.Intermediate:
-                multiplier = FCEConstants.ActivityMultipliers.Intermediate;
-                break;
-            case ActivityLevel.Advance:
-                multiplier = FCEConstants.ActivityMultipliers.Advance;
-                break;
-            case ActivityLevel.TrueBeast:
-                multiplier = FCEConstants.ActivityMultipliers.TrueBeast;
-                break;
-            default:
-                return CalculatedMetricsErrors.ActivityLevelInvalid;
-        }
-
-        return bmr * multiplier;
+        return _activityMultipliers.TryGetValue(activityLevel, out var multiplier)
+            ? bmr * multiplier
+            : CalculatedMetricsErrors.ActivityLevelInvalid;
     }
 
     public static Result<double> CalculateCalorieTarget(double tdee, Goal goal)
     {
-        switch (goal)
-        {
-            case Goal.LoseWeight:
-                return tdee + FCEConstants.CalorieAdjustments.LoseWeight;
-            case Goal.GetFitter:
-                return tdee + FCEConstants.CalorieAdjustments.GetFitter;
-            case Goal.GainWeight:
-                return tdee + FCEConstants.CalorieAdjustments.GainWeight;
-            default:
-                return CalculatedMetricsErrors.GoalInvalid;
-        }
+        return _calorieAdjustments.TryGetValue(goal, out var adjustment)
+            ? tdee + adjustment
+            : CalculatedMetricsErrors.GoalInvalid;
     }
 
     public static FitnessStatus DetermineStatus(double calorieTarget)
     {
         if (calorieTarget <= FCEConstants.StatusThresholds.WeakMax)
-        {
             return FitnessStatus.Weak;
-        }
-        else if (calorieTarget <= FCEConstants.StatusThresholds.NormalMax)
-        {
+
+        if (calorieTarget <= FCEConstants.StatusThresholds.NormalMax)
             return FitnessStatus.Normal;
-        }
-        else
-        {
-            return FitnessStatus.Hard;
-        }
+
+        return FitnessStatus.Hard;
     }
 }

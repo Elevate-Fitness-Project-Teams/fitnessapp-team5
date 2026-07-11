@@ -61,28 +61,29 @@ public sealed class RegisterUserFitnessCommandHandler(
             return transactionResult.Errors;
         }
 
-        // Read from EF Core Change Tracker (in-memory) — no extra DB roundtrips.
-        // Both entities were added via AddAsync() inside the Domain Event handlers,
-        // so they are already tracked in this DbContext after SaveChanges.
-        var metrics = context.CalculatedMetrics
-            .Local
-            .FirstOrDefault(x => x.UserId == command.UserId);
+        // Query DB directly — more reliable than reading from .Local Change Tracker.
+        // The event handlers have already committed both UserFitnessStats + CalculatedMetrics.
+        var metrics = await context.CalculatedMetrics
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.UserId == command.UserId, ct);
 
         if (metrics is null)
         {
             return Error.Unexpected("Metrics.NotFound", "Calculated metrics were not created by the event handler.");
         }
 
-        // Plan is optional — may not exist if no matching plan was seeded
-        var assignedPlan = context.UserAssignedPlans
-            .Local
-            .FirstOrDefault(p => p.UserId == command.UserId && p.IsActive);
+        // Plan is optional — may not exist if no matching plan config was found
+        var assignedPlan = await context.UserAssignedPlans
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.UserId == command.UserId && p.IsActive, ct);
 
-        // FitnessPlanConfig was loaded with tracking inside PlanAssignmentService,
-        // so it is already in the Change Tracker — no extra DB roundtrip needed.
-        var planConfig = context.FitnessPlanConfigs
-            .Local
-            .FirstOrDefault(c => c.PlanId == assignedPlan!.PlanId);
+        // Only load plan config if a plan was actually assigned
+        // Bug fix: was using assignedPlan!.PlanId which throws NullReferenceException when assignedPlan is null
+        var planConfig = assignedPlan is not null
+            ? await context.FitnessPlanConfigs
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.PlanId == assignedPlan.PlanId, ct)
+            : null;
 
         return new RegisterUserFitnessResponse(
             metrics.UserId,

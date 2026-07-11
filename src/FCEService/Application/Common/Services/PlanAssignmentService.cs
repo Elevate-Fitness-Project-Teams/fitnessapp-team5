@@ -18,7 +18,8 @@ public sealed class PlanAssignmentService(IAppDbContext db) : IPlanAssignmentSer
         Goal goal,
         FitnessStatus status,
         string reasonForChange,
-        CancellationToken ct)
+        CancellationToken ct,
+        string modifiedBy = "system")   // explicit actor for audit — "system" for background jobs, userId for user actions
     {
         var config = await db.FitnessPlanConfigs
             .FirstOrDefaultAsync(x => x.Goal == goal && x.Status == status, ct);
@@ -36,22 +37,27 @@ public sealed class PlanAssignmentService(IAppDbContext db) : IPlanAssignmentSer
         // Deactivate old plan and write history
         if (oldPlan is not null)
         {
-            oldPlan.Deactivate("system");
+            oldPlan.Deactivate(modifiedBy);
 
-            var historyResult = UserPlanHistory.Create(userId, oldPlan.PlanId, reasonForChange, "system");
+            var historyResult = UserPlanHistory.Create(userId, oldPlan.PlanId, reasonForChange, modifiedBy);
             if (historyResult.IsError)
                 return historyResult.Errors;
 
-            historyResult.Value.End(DateTime.UtcNow, "system");
+            historyResult.Value.End(DateTime.UtcNow, modifiedBy);
             await db.UserPlanHistories.AddAsync(historyResult.Value, ct);
         }
 
         // Assign new plan
-        var newPlanResult = UserAssignedPlan.Create(userId, config.PlanId, config.PlanName, "system");
+        var newPlanResult = UserAssignedPlan.Create(userId, config.PlanId, config.PlanName, modifiedBy);
         if (newPlanResult.IsError)
             return newPlanResult.Errors;
 
         await db.UserAssignedPlans.AddAsync(newPlanResult.Value, ct);
+
+        // CONTRACT: SaveChangesAsync is intentionally NOT called here.
+        // This service only stages entities in the EF Core Change Tracker.
+        // The CALLER (handler or background job) is responsible for committing,
+        // allowing it to batch multiple plan assignments in a single transaction.
         return newPlanResult.Value;
     }
 }

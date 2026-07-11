@@ -1,5 +1,6 @@
 using FCEService.Application.Features.Biometrics.Commands.RecalculateMetrics;
 using FCEService.Application.IntegrationEvents;
+using FCEService.Domain.Common.Results;
 using MassTransit;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -21,11 +22,19 @@ public class WeightUpdatedConsumer(IMediator mediator, ILogger<WeightUpdatedCons
 
         if (result.IsError)
         {
-            logger.LogError("Failed to recalculate metrics for user {UserId}. Error: {Error}", 
-                context.Message.UserId, result.Errors[0].Description);
-            
-            // Optionally, we could throw an exception to let MassTransit retry it,
-            // but for now we'll just log the error to avoid poison queues if it's a validation error.
+            var error = result.Errors[0];
+
+            // Infrastructure failures (DB timeout, unexpected errors) — throw so MassTransit retries
+            if (error.Type == ErrorKind.Unexpected)
+            {
+                logger.LogError("Infrastructure error while recalculating metrics for user {UserId}. Will retry. Error: {Error}", 
+                    context.Message.UserId, error.Description);
+                throw new InvalidOperationException(error.Description);
+            }
+
+            // Business logic errors (user not found, validation) — log and discard, no retry
+            logger.LogWarning("Business error for user {UserId} — message discarded (no retry). Error: [{Code}] {Description}", 
+                context.Message.UserId, error.Code, error.Description);
         }
         else
         {
@@ -33,3 +42,4 @@ public class WeightUpdatedConsumer(IMediator mediator, ILogger<WeightUpdatedCons
         }
     }
 }
+

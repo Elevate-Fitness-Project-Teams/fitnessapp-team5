@@ -21,9 +21,7 @@ public sealed class GetMetricsByUserIdQueryHandler(
         // Fix #3: AsNoTracking — read-only query, no mutation needed
         var metrics = await context.CalculatedMetrics
             .AsNoTracking()
-            .Where(m => m.UserId == request.UserId)
-            .OrderByDescending(m => m.CreatedAtUtc)
-            .FirstOrDefaultAsync(ct);
+            .FirstOrDefaultAsync(m => m.UserId == request.UserId, ct);
 
         if (metrics is null)
         {
