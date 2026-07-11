@@ -40,6 +40,15 @@ services:
       sqlserver:
         condition: service_healthy
 
+  smartcoachservice:
+   container_name: smartcoachservice
+   build:
+    context: .
+    dockerfile: src/AuthenticationService/Dockerfile
+   depends_on:
+     sqlserver:
+      condition: service_healthy
+
   workoutservice:
     image: ${DOCKER_REGISTRY-}workoutservice
     build:

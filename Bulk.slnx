@@ -6,6 +6,7 @@
     <Project Path="src/NotificationService/NotificationService.csproj" Id="8490ea11-bba3-49ad-a2be-084ce5a155eb" />
     <Project Path="src/NutritionService/NutritionService.csproj" />
     <Project Path="src/ProgressTrackingService/ProgressTrackingService.csproj" Id="f22d1829-2c8a-4f9d-8ae9-6ce11ae89c4e" />
+    <Project Path="src/SmartCoachService/SmartCoachService.csproj" />
     <Project Path="src/UserProfileService/UserProfileService.csproj" Id="f72b74ee-16e4-48f9-86c3-881f35d38353" />
     <Project Path="src/WorkoutService/WorkoutService.csproj" Id="f3297844-45be-49b5-a48c-15f9ae742dee" />
   </Folder>
