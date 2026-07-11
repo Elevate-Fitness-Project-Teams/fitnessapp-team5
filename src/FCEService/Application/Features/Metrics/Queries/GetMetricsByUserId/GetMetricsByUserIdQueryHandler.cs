@@ -18,15 +18,16 @@ public sealed class GetMetricsByUserIdQueryHandler(
     {
         logger.LogInformation("Getting latest CalculatedMetrics for UserId: {UserId}", request.UserId);
 
-        // Fix #3: AsNoTracking — read-only query, no mutation needed
         var metrics = await context.CalculatedMetrics
             .AsNoTracking()
-            .FirstOrDefaultAsync(m => m.UserId == request.UserId, ct);
+            .Where(m => m.UserId == request.UserId)
+            .OrderByDescending(m => m.CreatedAtUtc)
+            .FirstOrDefaultAsync(ct);
 
         if (metrics is null)
         {
             logger.LogWarning("No CalculatedMetrics found for UserId: {UserId}", request.UserId);
-            return CalculatedMetricsErrors.NotFound; // Re-use NotFound error
+            return CalculatedMetricsErrors.NotFound;
         }
 
         return metrics.ToResponse();
