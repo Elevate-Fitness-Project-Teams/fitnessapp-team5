@@ -13,17 +13,17 @@ public sealed class GetBiometricsByIdQueryHandler(IAppDbContext dbContext, ILogg
       GetBiometricsByIdQuery query,
        CancellationToken ct)
     {
-        // LoggingBehaviour already logs every request — no need to log again here.
+        logger.LogInformation("Getting UserFitnessStats for this UserId:{UserId}", query.UserId);
+
         var userFitnessStats = await dbContext.UserFitnessStats
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.UserId == query.UserId, ct);
-
-        if (userFitnessStats is null)
+        if (userFitnessStats == null)
         {
-            logger.LogWarning("UserFitnessStats not found for UserId: {UserId}", query.UserId);
+            logger.LogWarning("UserFitnessStats for this UserId:{UserId} not found", query.UserId);
             return UserFitnessStatsErrors.UserNotFound;
         }
-
+        logger.LogInformation("UserFitnessStats for this UserId:{UserId} found", query.UserId);
         return userFitnessStats.ToResponse();
     }
 }
