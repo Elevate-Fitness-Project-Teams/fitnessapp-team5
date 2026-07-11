@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using NutritionService.Infrastructure.Authentication;
 using NutritionService.Infrastructure.FitnessCalculationEngine;
 using NutritionService.Infrastructure.Persistence;
 
@@ -15,6 +16,8 @@ namespace NutritionService
             ));
 
             services.AddScoped<NutritionDbInitializer>();
+            services.AddHttpContextAccessor();
+            services.AddScoped<ICurrentUserService, CurrentUserService>();
 
             services.Configure<FceOptions>(
                 configuration.GetSection(FceOptions.SectionName));

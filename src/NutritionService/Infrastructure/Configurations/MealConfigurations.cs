@@ -16,6 +16,7 @@ namespace NutritionService.Infrastructure.Configurations
                 .HasMaxLength(150);
 
             builder.Property(m => m.Type)
+                .HasConversion<string>()
                 .IsRequired()
                 .HasMaxLength(20);
 
@@ -32,15 +33,15 @@ namespace NutritionService.Infrastructure.Configurations
                 .IsRequired();
 
             builder.Property(m => m.IngredientsJson)
-                .HasMaxLength(500)
+                .HasColumnType("nvarchar(max)")
                 .IsRequired();
 
             builder.Property(m => m.InstructionsJson)
-                .HasMaxLength(500)
+                .HasColumnType("nvarchar(max)")
                 .IsRequired();
 
             builder.Property(m => m.VariationsJson)
-                .HasMaxLength(500);
+                .HasColumnType("nvarchar(max)");
 
             builder.Property(m => m.AllergensJson)
                 .HasMaxLength(500)

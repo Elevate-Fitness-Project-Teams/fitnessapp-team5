@@ -13,7 +13,7 @@ namespace NutritionService.Domain.Entities
         public double Fats { get; set; }
         public string IngredientsJson { get; set; } = string.Empty;
         public string InstructionsJson { get; set; } = string.Empty;
-        public string VariationsJson { get; set; } = string.Empty;
+        public string? VariationsJson { get; set; }
         public string AllergensJson { get; set; } = string.Empty;
         public string TagsJson { get; set; } = string.Empty;
     }

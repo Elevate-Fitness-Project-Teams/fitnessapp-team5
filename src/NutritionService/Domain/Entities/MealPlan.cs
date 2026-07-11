@@ -6,10 +6,10 @@ namespace NutritionService.Domain.Entities
     {
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        public double TargetCalorieTangeMin { get; set; }
-        public double TargetCalorieTangeMax { get; set; }
+        public double TargetCalorieRangeMin { get; set; }
+        public double TargetCalorieRangeMax { get; set; }
         
         //Navigation Properties
-       public IEnumerable<MealPlanItem> MealPlanItems { get; set; } = new List<MealPlanItem>();
+        public ICollection<MealPlanItem> MealPlanItems { get; set; } = new List<MealPlanItem>();
     }
 }

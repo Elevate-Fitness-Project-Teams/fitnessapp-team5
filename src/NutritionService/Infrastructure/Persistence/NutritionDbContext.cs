@@ -8,7 +8,7 @@ namespace NutritionService.Infrastructure.Persistence
         public NutritionDbContext(DbContextOptions<NutritionDbContext> options) : base(options) { }
 
         public DbSet<Meal> Meals { get; set; }
-        public DbSet<MealPlan> MealsPlan { get; set; }
+        public DbSet<MealPlan> MealPlans { get; set; }
         public DbSet<MealPlanItem> MealPlanItems { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

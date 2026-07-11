@@ -54,5 +54,6 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapNutritionEndpoints();
 
 app.Run();
