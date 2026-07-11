@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace FCEService.Infrastructure.Persistence.Configurations
 {
-    public class UserFitnessStatsConfiguration : IEntityTypeConfiguration<UserFitnessStats>
+    public sealed class UserFitnessStatsConfiguration : IEntityTypeConfiguration<UserFitnessStats>
     {
         public void Configure(EntityTypeBuilder<UserFitnessStats> builder)
         {
@@ -14,7 +14,7 @@ namespace FCEService.Infrastructure.Persistence.Configurations
 
             builder.Property(x => x.UserId)
                 .IsRequired();
-            
+
             // Unique index to ensure one active stats profile per user
             builder.HasIndex(x => x.UserId)
                 .IsUnique();

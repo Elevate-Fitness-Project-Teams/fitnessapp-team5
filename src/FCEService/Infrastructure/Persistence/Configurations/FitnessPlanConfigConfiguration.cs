@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace FCEService.Infrastructure.Persistence.Configurations
 {
-    public class FitnessPlanConfigConfiguration : IEntityTypeConfiguration<FitnessPlanConfig>
+    public sealed class FitnessPlanConfigConfiguration : IEntityTypeConfiguration<FitnessPlanConfig>
     {
         public void Configure(EntityTypeBuilder<FitnessPlanConfig> builder)
         {
@@ -29,7 +29,8 @@ namespace FCEService.Infrastructure.Persistence.Configurations
                 .IsRequired();
 
             builder.Property(x => x.Status)
-                .HasConversion<int>()
+                .HasConversion<string>()
+                .HasMaxLength(20)
                 .IsRequired();
 
             builder.Property(x => x.MinCalorie)

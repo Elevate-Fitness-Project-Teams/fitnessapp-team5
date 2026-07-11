@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using Mapster;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using UserProfileService.Abstractions;
 using UserProfileService.Contracts.UserProfiles;
@@ -19,13 +20,7 @@ internal class GetUserProfileQueryHandler(IUnitOfWork _unitOfWork, ICurrentUser 
             .Repository<UserProfile>()
             .GetQueryable()
             .Where(x => x.UserId == currentUser.Id)
-            .Select(x => new UserProfileResponse(
-                x.UserId,
-                x.FirstName,
-                x.LastName,
-                x.Email,
-                x.Phone
-            ))
+            .ProjectToType<UserProfileResponse>()
             .FirstOrDefaultAsync(cancellationToken);
 
         if (user is null)

@@ -18,16 +18,13 @@ public abstract class Entity
     {
         Id = id == Guid.Empty ? Guid.NewGuid() : id;
     }
-    //we make add domin eve nt public because we want to be able to add domain events from outside the entity, 
-    //for example from the application layer when we want to raise an event after a command is executed.
-    //This allows us to decouple the domain events from the entity and make it easier to manage them in a
-    //centralized way, such as using a domain event dispatcher or mediator.
-    public void AddDomainEvent(DomainEvent domainEvent)
+    //protected so that only the entity and its derivatives can add domain events
+    protected void AddDomainEvent(DomainEvent domainEvent)
     {
         _domainEvents.Add(domainEvent);
     }
 
-    public void RemoveDomainEvent(DomainEvent domainEvent)
+    protected void RemoveDomainEvent(DomainEvent domainEvent)
     {
         _domainEvents.Remove(domainEvent);
     }

@@ -7,7 +7,7 @@ namespace FCEService.Domain.Entities.FitnessPlanConfig
 {
     public class FitnessPlanConfig
     {
-        public string PlanId { get; private set; }
+        public Guid PlanId { get; private set; }
         public string PlanName { get; private set; }
         public string Description { get; private set; }
         public Goal Goal { get; private set; }
@@ -23,10 +23,16 @@ namespace FCEService.Domain.Entities.FitnessPlanConfig
         public DateTimeOffset LastModifiedUtc { get; set; }
         public string? LastModifiedBy { get; set; }
 
-        private FitnessPlanConfig() { }
+        private FitnessPlanConfig() 
+        {
+            PlanName = string.Empty;
+            Description = string.Empty;
+            EstimatedDuration = string.Empty;
+            ProgramType = string.Empty;
+        }
 
         private FitnessPlanConfig(
-            string planId,
+            Guid planId,
             string planName,
             string description,
             Goal goal,
@@ -53,7 +59,7 @@ namespace FCEService.Domain.Entities.FitnessPlanConfig
         }
 
         public static Result<FitnessPlanConfig> Create(
-            string planId,
+            Guid planId,
             string planName,
             string description,
             Goal goal,
@@ -121,7 +127,7 @@ namespace FCEService.Domain.Entities.FitnessPlanConfig
         }
 
         private static List<Error> Validate(
-            string planId,
+            Guid planId,
             string planName,
             Goal goal,
             FitnessStatus status,
@@ -131,13 +137,9 @@ namespace FCEService.Domain.Entities.FitnessPlanConfig
         {
             var errors = new List<Error>();
 
-            if (string.IsNullOrWhiteSpace(planId))
+            if (planId == Guid.Empty)
             {
                 errors.Add(FitnessPlanConfigErrors.PlanIdRequired);
-            }
-            else if (planId.Length > 50)
-            {
-                errors.Add(FitnessPlanConfigErrors.PlanIdTooLong);
             }
 
             if (string.IsNullOrWhiteSpace(planName))

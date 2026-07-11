@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace FCEService.Infrastructure.Persistence.Configurations
 {
-    public class UserPlanHistoryConfiguration : IEntityTypeConfiguration<UserPlanHistory>
+    public sealed class UserPlanHistoryConfiguration : IEntityTypeConfiguration<UserPlanHistory>
     {
         public void Configure(EntityTypeBuilder<UserPlanHistory> builder)
         {

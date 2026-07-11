@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace FCEService.Infrastructure.Persistence.Configurations
 {
-    public class UserAssignedPlanConfiguration : IEntityTypeConfiguration<UserAssignedPlan>
+    public sealed class UserAssignedPlanConfiguration : IEntityTypeConfiguration<UserAssignedPlan>
     {
         public void Configure(EntityTypeBuilder<UserAssignedPlan> builder)
         {
@@ -16,10 +16,12 @@ namespace FCEService.Infrastructure.Persistence.Configurations
                 .IsRequired();
 
             builder.Property(x => x.PlanId)
-                .HasMaxLength(50)
                 .IsRequired();
 
             builder.HasIndex(x => x.UserId);
+
+            // Index on FK to avoid full table scan on plan-based queries
+            builder.HasIndex(x => x.PlanId);
 
             // FK to FitnessPlanConfigs — Restrict delete to prevent orphaned assignments
             builder.HasOne<Domain.Entities.FitnessPlanConfig.FitnessPlanConfig>()

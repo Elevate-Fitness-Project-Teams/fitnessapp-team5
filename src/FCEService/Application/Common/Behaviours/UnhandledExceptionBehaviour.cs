@@ -1,19 +1,18 @@
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 using MediatR;
-
 using Microsoft.Extensions.Logging;
 
 namespace FCEService.Application.Common.Behaviours;
 
-public class UnhandledExceptionBehaviour<TRequest, TResponse>(ILogger<TRequest> logger)
+public sealed class UnhandledExceptionBehaviour<TRequest, TResponse>(ILogger<TRequest> logger)
     : IPipelineBehavior<TRequest, TResponse>
     where TRequest : notnull
-{       
+{
     private readonly ILogger<TRequest> _logger = logger;
 
-    public async Task<TResponse> Handle(
-        TRequest request,
-        RequestHandlerDelegate<TResponse> next,
-        CancellationToken ct)
+    public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken ct)
     {
         try
         {

@@ -3,13 +3,16 @@ using AuthenticationService.Entities;
 using AuthenticationService.Persistence.Repositories.UnitOfWork;
 using AuthenticationService.Persistence.Repositories.User;
 using AuthenticationService.Services.Password;
+using Bulk.Shared.Contracts.Events;
+using MassTransit;
 using MediatR;
 
 namespace AuthenticationService.Features.Commands.Register
 {
     public class RegisterCommandHandler(IUserRepository _userRepository,
                                         IPasswordService _passwordService,
-                                        IUnitOfWork _unitOfWork) 
+                                        IUnitOfWork _unitOfWork,
+                                        IPublishEndpoint publishEndpoint)
         : IRequestHandler<RegisterCommand, RequestResult<RegisterResponse>>
     {
         public async Task<RequestResult<RegisterResponse>> Handle(
@@ -55,6 +58,14 @@ namespace AuthenticationService.Features.Commands.Register
             _userRepository.Add(user);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            await publishEndpoint.Publish(new UserRegisteredEvent(
+                user.Id,
+                request.FirstName,
+                request.LastName,
+                request.Email,
+                request.PhoneNumber
+                ), cancellationToken);
 
             // Response
             return RequestResult<RegisterResponse>.Success(

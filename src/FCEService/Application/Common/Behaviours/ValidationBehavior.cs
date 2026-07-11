@@ -7,7 +7,7 @@ using FluentValidation;
 using FCEService.Domain.Common.Results;
 using FCEService.Domain.Common.Results.Abstractions;
 
-public class ValidationBehavior<TRequest, TResponse>(IValidator<TRequest>? validator = null)
+public sealed class ValidationBehavior<TRequest, TResponse>(IValidator<TRequest>? validator = null)
     : IPipelineBehavior<TRequest, TResponse>
         where TRequest : IRequest<TResponse>
         where TResponse : IResult
@@ -36,6 +36,13 @@ public class ValidationBehavior<TRequest, TResponse>(IValidator<TRequest>? valid
                 code: error.PropertyName,
                 description: error.ErrorMessage));
 
-        return (dynamic)errors;
+        // WHY (dynamic):
+        // TResponse is constrained to IResult, and all concrete Result<T> types have an implicit
+        // operator from List<Error>. We cannot invoke an implicit operator generically at compile time,
+        // so we use (dynamic) to let the CLR resolve the correct implicit conversion at runtime.
+        // This is safe because ValidationBehavior is ONLY wired up for requests whose TResponse
+        // implements IResult — any type that doesn't have the operator will fail loudly at startup,
+        // not silently at runtime in production.
+        return (TResponse)(dynamic)errors;
     }
 }

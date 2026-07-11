@@ -6,6 +6,6 @@ namespace FCEService.Domain.Entities.UserAssignedPlan
     {
         public static Error UserIdRequired => Error.Validation(nameof(UserIdRequired), "User ID is required.");
         public static Error PlanIdRequired => Error.Validation(nameof(PlanIdRequired), "Plan ID is required.");
-        public static Error PlanIdTooLong => Error.Validation(nameof(PlanIdTooLong), "Plan ID must be 50 characters or less.");
+        public static Error NotFound => Error.NotFound(nameof(NotFound), "No active assigned plan was found for this user.");
     }
 }

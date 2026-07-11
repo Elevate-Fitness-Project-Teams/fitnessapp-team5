@@ -3,7 +3,7 @@ using System;
 
 namespace FCEService.Application.Features.Biometrics.Queries.GetBiometrics;
 
-public class GetBiometricsByIdValidator : AbstractValidator<GetBiometricsByIdQuery>
+public sealed class GetBiometricsByIdValidator : AbstractValidator<GetBiometricsByIdQuery>
 {
     public GetBiometricsByIdValidator()
     {

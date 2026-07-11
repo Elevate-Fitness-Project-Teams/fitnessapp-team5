@@ -10,11 +10,11 @@ public abstract class AuditableEntity : Entity
     {
     }
 
-    public DateTimeOffset CreatedAtUtc { get; init; }
+    public DateTimeOffset CreatedAtUtc { get; protected set; }
 
-    public string? CreatedBy { get; init; }
+    public string CreatedBy { get; protected set; } = string.Empty;
 
-    public DateTimeOffset LastModifiedUtc { get; set; }
+    public DateTimeOffset LastModifiedUtc { get; protected set; }
 
-    public string? LastModifiedBy { get; set; }
+    public string? LastModifiedBy { get; protected set; }
 }

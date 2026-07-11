@@ -21,6 +21,7 @@ namespace FCEService.Domain.Entities.UserFitnessStats
 
         private UserFitnessStats() { }
 
+        [System.Diagnostics.CodeAnalysis.SetsRequiredMembers]
         private UserFitnessStats(
             Guid id,
             Guid userId,
@@ -29,8 +30,7 @@ namespace FCEService.Domain.Entities.UserFitnessStats
             DateTime birthDate,
             Gender gender,
             Goal goal,
-            ActivityLevel activityLevel,
-            string createdBy) : base(id)
+            ActivityLevel activityLevel) : base(id)
         {
             UserId = userId;
             Weight = weight;
@@ -40,7 +40,7 @@ namespace FCEService.Domain.Entities.UserFitnessStats
             Goal = goal;
             ActivityLevel = activityLevel;
             CreatedAtUtc = DateTimeOffset.UtcNow;
-            CreatedBy = createdBy;
+            CreatedBy = userId.ToString();
         }
 
         public static Result<UserFitnessStats> Create(
@@ -50,8 +50,7 @@ namespace FCEService.Domain.Entities.UserFitnessStats
             DateTime birthDate,
             Gender gender,
             Goal goal,
-            ActivityLevel activityLevel,
-            string createdBy)
+            ActivityLevel activityLevel)
         {
             var errors = Validate(userId, weight, height, birthDate, gender, goal, activityLevel);
 
@@ -68,8 +67,7 @@ namespace FCEService.Domain.Entities.UserFitnessStats
                 birthDate,
                 gender,
                 goal,
-                activityLevel,
-                createdBy);
+                activityLevel);
 
             userFitnessStats.AddDomainEvent(new UserFitnessStatsCreatedDomainEvent(userFitnessStats));
 
@@ -83,7 +81,8 @@ namespace FCEService.Domain.Entities.UserFitnessStats
             Gender gender,
             Goal goal,
             ActivityLevel activityLevel,
-            string modifiedBy)
+            string modifiedBy,
+            FitnessUpdateReason reason = FitnessUpdateReason.UserRequested)
         {
             var errors = Validate(UserId, weight, height, birthDate, gender, goal, activityLevel);
 
@@ -101,7 +100,23 @@ namespace FCEService.Domain.Entities.UserFitnessStats
             LastModifiedUtc = DateTimeOffset.UtcNow;
             LastModifiedBy = modifiedBy;
 
-            AddDomainEvent(new UserFitnessStatsUpdatedDomainEvent(this));
+            AddDomainEvent(new UserFitnessStatsUpdatedDomainEvent(this, reason));
+
+            return this;
+        }
+
+        public Result<UserFitnessStats> UpdateWeight(double newWeight, string modifiedBy = "system")
+        {
+            if (newWeight < FCEConstants.Validation.MinWeight || newWeight > FCEConstants.Validation.MaxWeight)
+            {
+                return UserFitnessStatsErrors.WeightInvalid;
+            }
+
+            Weight = newWeight;
+            LastModifiedUtc = DateTimeOffset.UtcNow;
+            LastModifiedBy = modifiedBy; // explicit actor — never hard-coded
+
+            AddDomainEvent(new UserFitnessStatsUpdatedDomainEvent(this, FitnessUpdateReason.WeightOnly));
 
             return this;
         }

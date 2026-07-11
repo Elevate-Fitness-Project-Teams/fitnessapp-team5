@@ -41,8 +41,6 @@ namespace FCEService.Domain.Common.Constants
             public const double LoseWeight = -500.0;
             public const double GetFitter = 0.0;
             public const double GainWeight = 300.0;
-            public const double GainMoreFlexible = 150.0;
-            public const double LearnTheBasic = 0.0;
         }
 
         // Calorie Status Thresholds
